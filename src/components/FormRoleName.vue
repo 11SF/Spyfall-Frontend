@@ -60,6 +60,8 @@ export default {
     },
     addRoleToStore() {
       this.addRole(this.name, this.description);
+      this.name = ""
+      this.description = ""
     },
   },
   watch: {

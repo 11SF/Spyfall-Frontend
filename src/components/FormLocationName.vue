@@ -6,11 +6,11 @@
         class="w-4/6 border-solid border-2 px-4 py-2 mr-5 rounded-xl disabled:opacity-75"
         type="text"
         v-model="name"
-        :disabled="getCreateLocationStatus"
+        :disabled="getNewLocation"
       />
       <button
         class="w-2/6 bg-blue-500 text-white px-4 py-2 rounded-xl disabled:opacity-75 disabled:bg-gray-500"
-        :disabled="isDisableBtn || getCreateLocationStatus"
+        :disabled="isDisableBtn || getNewLocation"
         @click="submitName"
       >
         ยืนยัน
@@ -84,14 +84,29 @@ export default {
       return false;
     },
     async submitName() {
-      let result = await this.createLocation(this.name, this.getPlayerInfo.name);
-      console.log(result);
+      let result = await this.createLocation(
+        this.name,
+        this.getPlayerInfo.name,
+        this.getPlayerInfo.id
+      );
+      // console.log(result);
       if (result.code === 5033) {
         this.message = this.messageType.dupplicate;
         this.isDisableBtn = true;
         this.fetchLocation();
       }
     },
+  },
+  beforeUpdate() {
+    if (this.getNewLocation) {
+      this.name = this.getNewLocation.name;
+      this.isDisableBtn = true;
+    }
+  },
+  mounted() {
+    if (!this.getNewLocation) {
+      // this.name = "";
+    }
   },
   watch: {
     name(newName) {

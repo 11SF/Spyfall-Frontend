@@ -1,4 +1,5 @@
 import { createWebHistory, createRouter } from "vue-router";
+import Home from "../views/Home.vue";
 import AddLocation from "../views/AddLocation.vue";
 import CreateName from "../views/CreateName.vue";
 // import About from "@/views/About.vue";
@@ -7,7 +8,7 @@ const routes = [
   {
     path: "/",
     name: "Home",
-    component: null,
+    component: Home,
   },
   {
     path: "/add-location",

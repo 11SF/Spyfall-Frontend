@@ -10,7 +10,83 @@ import { buildMetaResponse, buildResponse } from "../utility/response";
 export const useLocationStore = defineStore("LocationStore", {
   state: () => {
     return {
-      locationList: [],
+      locationList: [
+        {
+          name: "asdasdzxc",
+        },
+        {
+          name: "teasdardfst1",
+        },
+        {
+          name: "czxcwfczxv",
+        },
+        {
+          name: "zxcwevzdv",
+        },
+        {
+          name: "zxcz",
+        },
+        {
+          name: "czscwfsz",
+        },
+        {
+          name: "Lorem ipsum dolor sit, amet consectetur",
+        },
+        {
+          name: "lasdawsczxc",
+        },
+        {
+          name: "Lorem ipsum dolor sit, amet",
+        },
+        {
+          name: "zxcassds",
+        },
+        {
+          name: "zxcwevzdv",
+        },
+        {
+          name: "zxcz",
+        },
+        {
+          name: "czscwfsz",
+        },
+        {
+          name: "125as7d854wdaczx",
+        },
+        {
+          name: "lasdawsczxc",
+        },
+        {
+          name: "Lorem ipsum dolor sit, amet",
+        },
+        {
+          name: "czxcwfczxv",
+        },
+        {
+          name: "zxcwevzdv",
+        },
+        {
+          name: "zxcz",
+        },
+        {
+          name: "czscwfsz",
+        },
+        {
+          name: "125as7d854wdaczx",
+        },
+        {
+          name: "lasdawsczxc",
+        },
+        {
+          name: "zxcasdf",
+        },
+        {
+          name: "zxcassds",
+        },
+        {
+          name: "zxcwevzdv",
+        },
+      ],
       newLocation: null,
       createLocationStatus: false,
       isFetchingLocation: true,

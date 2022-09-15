@@ -1,21 +1,46 @@
 <template>
-  <div class="w-full h-screen py-20 text-white root absolute z-50">
-    <p
-      class="mx-auto w-fit px-10 py-6 text-4xl text-center rounded-3xl bg-[#FF8700]"
+  <div class="w-full h-fit xl:h-screen py-20 text-white root">
+    <div
+      class="mx-auto w-fit h-fit text-4xl flex justify-between rounded-3xl bg-white overflow-hidden"
     >
-      #TEDEV
-    </p>
+      <p class="py-6 px-5 bg-[#FF8700] rounded-3xl">#TEDEV</p>
+      <button
+        class="text-black px-5 xl:px-0 xl:text-white xl:pt-5 xl:hover:px-5 xl:hover:pt-0 xl:hover:text-black duration-150 ease-in-out flex justify-center items-center"
+        @click="handleLeaveRoomBtn"
+      >
+        <div class="w-fit mx-auto">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="2.5"
+            stroke="currentColor"
+            class="w-6 h-6 text-black"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3"
+            />
+          </svg>
+          <p class="text-sm">ออก</p>
+        </div>
+      </button>
+    </div>
 
     <!-- Main -->
     <div
-      class="w-5/6 h-5/6 mx-auto rounded-3xl mt-12 grid grid-cols-12 text-black"
+      class="w-5/6 h-5/6 mx-auto mt-12 grid row-span-3 xl:grid-cols-12 text-black"
     >
       <!-- Col 1 -->
       <div
-        class="px-10 py-10 col-span-6 grid grid-rows-6 backdrop-blur-sm bg-white/70 rounded-l-3xl"
+        class="px-2 xl:px-10 py-10 col-span-6 grid grid-rows-6 backdrop-blur-sm bg-white/70 rounded-t-3xl xl:rounded-r-none xl:rounded-l-3xl"
       >
-        <div class="row-span-1 flex justify-between" v-if="true">
-          <div>
+        <div
+          class="row-span-1 flex flex-col justify-center xl:flex-row xl:justify-between text-xs sm:text-lg"
+          v-if="true"
+        >
+          <div class="mx-auto xl:mx-0 mb-3">
             <button
               :class="getClassModeSelectBtn().left"
               class="px-4 py-2 shadow-inner"
@@ -31,60 +56,114 @@
               โหมดคนหลงทาง
             </button>
           </div>
-          <div
-            class="w-fit h-fit bg-white flex rounded-3xl shadow-inner overflow-hidden"
-          >
-            <p class="px-4 py-2 font-bold">เวลา</p>
-            <select v-model="roundTime">
-              <option v-for="index in [8, 7, 6, 5, 4, 3, 2, 1]">
-                {{ index }}.00
-              </option>
-            </select>
-            <p class="px-4 py-2 font-bold">นาที</p>
+
+          <div class="w-fit mx-auto xl:mx-0">
+            <div
+              class="w-fit h-fit mx-auto xl:mx-0 bg-white flex rounded-3xl shadow-inner overflow-hidden mb-2"
+            >
+              <p class="px-4 py-2 font-bold">เวลา</p>
+              <select class="text-center" v-model="roundTime">
+                <option v-for="index in [8, 7, 6, 5, 4, 3, 2, 1]">
+                  {{ index }}.00
+                </option>
+              </select>
+              <p class="px-4 py-2 font-bold">นาที</p>
+            </div>
+            <div
+              class="w-full h-fit row-span-1 mx-auto bg-white rounded-3xl shadow-inner overflow-hidden flex justify-between"
+            >
+              <p class="px-4 py-2 font-bold">Spy</p>
+              <select class="text-center" v-model="spyTotal">
+                <option v-for="index in [8, 7, 6, 5, 4, 3, 2, 1]">
+                  {{ index }}
+                </option>
+              </select>
+              <p class="px-4 py-2 font-bold">คน</p>
+            </div>
           </div>
         </div>
         <div class="row-span-1 flex justify-between" v-else>
           <p class="text-left text-xl font-bold">โหมดคนหลงทาง</p>
           <p class="text-right text-xl font-bold">เวลา 8.00 นาที</p>
         </div>
-        <div class="mx-auto items-center row-span-4 h-full flex-block">
-          <p class="text-9xl text-center h-4/6 flex items-center">😀</p>
-          <p class="text-3xl font-bold text-center">สถานีตำรวจ</p>
-          <p class="text-xl font-bold text-center">( ตำรวจ )</p>
+
+        <!-- main area -->
+        <!-- Waiting Room -->
+        <div
+          class="mx-auto items-center row-span-4 h-full flex-block grid grid-rows-6"
+          v-if="false"
+        >
+          <p class="text-9xl text-center row-span-3">⏳</p>
+          <p class="text-3xl font-bold text-center row-span-1">รอผู้เล่น</p>
+          <p class="text-sm font-normal text-center row-span-1 text-ellipsis">
+            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Cumque, ea
+            fuga tenetur nostrum natus officia vero magni qui alias, doloremque
+            sequi porro aspernatur eum quas quasi inventore necessitatibus esse
+            soluta!
+          </p>
         </div>
+        <!-- Started Game -->
+        <div class="mx-auto items-center row-span-4 h-full flex-block grid grid-rows-6" v-else>
+          <p class="text-9xl text-center row-span-3">😀</p>
+          <p class="text-3xl font-bold text-center row-span-1">สถานีตำรวจ</p>
+          <p class="text-xl font-bold text-center  row-span-1">( ตำรวจ )</p>
+        </div>
+
+        <!-- btn area -->
+        <!-- Waiting Room -->
         <div class="row-span-1 mx-auto">
           <button
-            class="text-white px-20 py-4 rounded-3xl bg-gradient-to-tr from-[#1e0253] to-[#c637a0] shadow-inner ease-in-out duration-300 delay-75 animate-bounce hover:animate-none"
-          >
+            class="text-white px-20 py-4 rounded-3xl mt-10 bg-gradient-to-tr from-[#1e0253] to-[#c637a0] shadow-inner ease-in-out duration-300 delay-75 animate-bounce hover:animate-none"
+            v-if="true"
+            >
             เริ่มเกม
           </button>
         </div>
       </div>
 
       <!-- Col 2 -->
-      <div class="px-4 py-10 col-span-3 bg-white">
-        <nav class="h-1/6 text-xl font-bold">
-          <p>รายชื่อผู้เล่น</p>
+      <div
+        class="h-fit xl:h-full px-4 py-10 col-span-6 xl:col-span-3 bg-white grid grid-cols-6 grid-rows-6"
+      >
+        <nav class="text-xl font-bold col-span-6 xl:col-span-6 row-span-1">
+          <p class="text-center xl:text-left">รายชื่อผู้เล่น</p>
         </nav>
         <div
-          class="w-full h-4/6 overflow-auto hover:overflow-y-scroll no-scrollbar relative"
+          class="w-full h-fit py-1 overflow-auto hover:overflow-y-scroll no-scrollbar col-span-6 sm:col-span-4 xl:col-span-6 row-span-3 sm:row-span-5 xl:row-span-3"
         >
-          <PlayerPanel :players="playerList" class="absolute" />
+          <PlayerPanel class="max-h-72" :players="playerList" :edit="true" />
         </div>
-        <div class="h-1/6 flex justify-center items-end">
-          <button class="w-full py-3 bg-red-600 rounded-3xl">ออกจากห้อง</button>
+
+        <div
+          class="flex flex-col items-start justify-end col-span-6 sm:col-span-2 xl:col-span-6 row-span-2 sm:row-span-5 xl:row-span-2"
+        >
+          <p class="text-black/40">
+            <span class="text-red-500/40">Room 👈</span>
+            {{ "Test 1" }} เข้ามาแล้ววววว
+          </p>
+          <p class="text-black/70">
+            <span class="text-red-500/40">Room 👈</span>
+            {{ "Test 1" }} เข้ามาแล้ววววว
+          </p>
+          <p>
+            <span class="text-red-500">Room 👈</span>
+            {{ "Test 1" }} เข้ามาแล้ววววว
+          </p>
         </div>
       </div>
 
       <!-- Col 3 -->
-      <div class="h-full px-4 py-10 col-span-3 rounded-r-3xl bg-white">
-        <nav class="h-1/6 text-xl font-bold">
-          <p>สถานที่ทั้งหมด</p>
+      <!-- <div class="h-full px-4 py-10 col-span-3 rounded-r-3xl bg-white"> -->
+      <div
+        class="h-fit xl:h-full px-4 py-10 col-span-6 xl:col-span-3 rounded-b-3xl xl:rounded-r-3xl xl:rounded-bl-none bg-white grid grid-rows-6"
+      >
+        <nav class="row-span-1 text-xl font-bold">
+          <p class="text-center xl:text-left">สถานที่ทั้งหมด</p>
         </nav>
         <div
-          class="w-full h-5/6 overflow-auto hover:overflow-y-scroll no-scrollbar relative"
+          class="w-full py-1 row-span-5 max-h-96 overflow-auto hover:overflow-y-scroll no-scrollbar"
         >
-          <PlayerPanel :players="locationList" class="absolute" />
+          <LocationPanel class="" :edit="true" />
         </div>
       </div>
     </div>
@@ -93,7 +172,19 @@
 
 <script>
 import PlayerPanel from "../components/playerPanel.vue";
+import LocationList from "../components/LocationList.vue";
+import { useLocationStore } from "../stores/locationStore";
+import { storeToRefs } from "pinia";
+import LocationPanel from "../components/LocationPanel.vue";
 export default {
+  setup() {
+    const locationStore = useLocationStore();
+    const { getLocationList } = storeToRefs(locationStore);
+    return {
+      locationStore,
+      getLocationList,
+    };
+  },
   data() {
     return {
       playerList: [
@@ -107,7 +198,37 @@ export default {
           name: "pployyss",
         },
         {
-          name: "beamandmestos",
+          name: "mentosandmentos",
+        },
+        {
+          name: "SOSO",
+        },
+        {
+          name: "jay",
+        },
+        {
+          name: "ผู้เล่น",
+        },
+        {
+          name: "anonymous",
+        },
+        {
+          name: "asdawfszdf",
+        },
+        {
+          name: "11SF",
+        },
+        {
+          name: "Rose",
+        },
+        {
+          name: "pployyss",
+        },
+        {
+          name: "mentosandmentos",
+        },
+        {
+          name: "SOSO",
         },
         {
           name: "jay",
@@ -142,7 +263,7 @@ export default {
           name: "czscwfsz",
         },
         {
-          name: "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Omnis molestiae temporibus expedita quia ut illo sit quidem nam modi neque!",
+          name: "Lorem ipsum dolor sit, amet consectetur",
         },
         {
           name: "lasdawsczxc",
@@ -201,10 +322,13 @@ export default {
       ],
       modeSelected: 0,
       roundTime: "8.00",
+      spyTotal: 1,
     };
   },
   components: {
     PlayerPanel,
+    LocationList,
+    LocationPanel,
   },
   methods: {
     getClassModeSelectBtn() {
@@ -224,6 +348,9 @@ export default {
       let time = parseInt(this.roundTime);
       console.log(time);
     },
+    handleLeaveRoomBtn() {
+      this.$router.push("/");
+    },
   },
 };
 </script>
@@ -233,6 +360,7 @@ export default {
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
+  background-color: black;
 }
 .no-scrollbar::-webkit-scrollbar {
   display: none;

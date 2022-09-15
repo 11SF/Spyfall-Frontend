@@ -39,6 +39,9 @@ export default {
     return {};
   },
   methods: {},
+  created() {
+    this.locationStore.fetchLocation()
+  },
 };
 </script>
 <style lang=""></style>

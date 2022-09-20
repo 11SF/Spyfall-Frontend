@@ -1,7 +1,8 @@
 <template>
   <div class="w-full flex flex-wrap gap-1 xl:w-full xl:flex-none">
     <div
-      v-for="(item, index) in sortList(getLocationList)"
+      v-if="getLocationList.length > 0"
+      v-for="(item, index) in getLocationList"
       :class="getPanelClass(index)"
       class="h-fit w-fit m-1 px-6 py-2 rounded-3xl shadow-lg cursor-pointer ease-in-out duration-300 active:scale-110 select-none relative"
       @click="handleClick(index)"
@@ -49,13 +50,18 @@
 <script>
 import { useLocationStore } from "../stores/locationStore";
 import { storeToRefs } from "pinia";
+import { useRoomStore } from "../stores/roomStore";
+
 export default {
   setup() {
     const locationStore = useLocationStore();
     const { getLocationList } = storeToRefs(locationStore);
+    const roomStore = useRoomStore();
+
     return {
       locationStore,
       getLocationList,
+      roomStore,
     };
   },
   props: ["edit"],
@@ -86,6 +92,7 @@ export default {
       return "rounded-full shadow-inner bg-gradient-to-tr from-[#ff9253df] to-[#ffd143]";
     },
     sortList(list) {
+      console.log(list);
       let result = [];
       for (let i = 0; i < list.length; i++) {
         for (let j = 0; j < list.length; j++) {
@@ -94,6 +101,7 @@ export default {
           }
         }
       }
+      console.log(result);
       return result;
     },
     handleDisable(index) {
@@ -102,10 +110,15 @@ export default {
       } else {
         this.disableList[index] = true;
       }
+      if (!this.roomStore.getRoomLocation) {
+        this.roomStore.setLocation(this.locationStore.getLocationList);
+      }
+      this.roomStore.filterLocation(this.getLocationList[index]);
     },
   },
   created() {
     // this.locationStore.fetchLocation()
+    // this.roomStore.setLocation(this.locationStore.getLocationList)
   },
 };
 </script>

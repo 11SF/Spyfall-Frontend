@@ -40,7 +40,7 @@ export default {
   },
   methods: {},
   created() {
-    this.locationStore.fetchLocation()
+    // this.locationStore.fetchLocation()
   },
 };
 </script>

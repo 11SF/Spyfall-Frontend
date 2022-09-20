@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import {
   buildApiResponseToLocationModelArray,
   buildApiResponseToLocationModel,
-  buildLocationModelToApiRequest,
+  buildLocationApiSingleToModel,
 } from "../adapter/location.adapter";
 import { axiosClient } from "../utility/axios";
 import { buildMetaResponse, buildResponse } from "../utility/response";
@@ -10,83 +10,84 @@ import { buildMetaResponse, buildResponse } from "../utility/response";
 export const useLocationStore = defineStore("LocationStore", {
   state: () => {
     return {
-      locationList: [
-        {
-          name: "asdasdzxc",
-        },
-        {
-          name: "teasdardfst1",
-        },
-        {
-          name: "czxcwfczxv",
-        },
-        {
-          name: "zxcwevzdv",
-        },
-        {
-          name: "zxcz",
-        },
-        {
-          name: "czscwfsz",
-        },
-        {
-          name: "Lorem ipsum dolor sit, amet consectetur",
-        },
-        {
-          name: "lasdawsczxc",
-        },
-        {
-          name: "Lorem ipsum dolor sit, amet",
-        },
-        {
-          name: "zxcassds",
-        },
-        {
-          name: "zxcwevzdv",
-        },
-        {
-          name: "zxcz",
-        },
-        {
-          name: "czscwfsz",
-        },
-        {
-          name: "125as7d854wdaczx",
-        },
-        {
-          name: "lasdawsczxc",
-        },
-        {
-          name: "Lorem ipsum dolor sit, amet",
-        },
-        {
-          name: "czxcwfczxv",
-        },
-        {
-          name: "zxcwevzdv",
-        },
-        {
-          name: "zxcz",
-        },
-        {
-          name: "czscwfsz",
-        },
-        {
-          name: "125as7d854wdaczx",
-        },
-        {
-          name: "lasdawsczxc",
-        },
-        {
-          name: "zxcasdf",
-        },
-        {
-          name: "zxcassds",
-        },
-        {
-          name: "zxcwevzdv",
-        },
-      ],
+      locationList: [],
+      // locationList: [
+      //   {
+      //     name: "asdasdzxc",
+      //   },
+      //   {
+      //     name: "teasdardfst1",
+      //   },
+      //   {
+      //     name: "czxcwfczxv",
+      //   },
+      //   {
+      //     name: "zxcwevzdv",
+      //   },
+      //   {
+      //     name: "zxcz",
+      //   },
+      //   {
+      //     name: "czscwfsz",
+      //   },
+      //   {
+      //     name: "Lorem ipsum dolor sit, amet consectetur",
+      //   },
+      //   {
+      //     name: "lasdawsczxc",
+      //   },
+      //   {
+      //     name: "Lorem ipsum dolor sit, amet",
+      //   },
+      //   {
+      //     name: "zxcassds",
+      //   },
+      //   {
+      //     name: "zxcwevzdv",
+      //   },
+      //   {
+      //     name: "zxcz",
+      //   },
+      //   {
+      //     name: "czscwfsz",
+      //   },
+      //   {
+      //     name: "125as7d854wdaczx",
+      //   },
+      //   {
+      //     name: "lasdawsczxc",
+      //   },
+      //   {
+      //     name: "Lorem ipsum dolor sit, amet",
+      //   },
+      //   {
+      //     name: "czxcwfczxv",
+      //   },
+      //   {
+      //     name: "zxcwevzdv",
+      //   },
+      //   {
+      //     name: "zxcz",
+      //   },
+      //   {
+      //     name: "czscwfsz",
+      //   },
+      //   {
+      //     name: "125as7d854wdaczx",
+      //   },
+      //   {
+      //     name: "lasdawsczxc",
+      //   },
+      //   {
+      //     name: "zxcasdf",
+      //   },
+      //   {
+      //     name: "zxcassds",
+      //   },
+      //   {
+      //     name: "zxcwevzdv",
+      //   },
+      // ],
       newLocation: null,
       createLocationStatus: false,
       isFetchingLocation: true,
@@ -97,9 +98,9 @@ export const useLocationStore = defineStore("LocationStore", {
   // could also be defined as
   // state: () => ({ count: 0 })
   getters: {
-    getRoles: (state) => {
-      return state.newLocation.roles;
-    },
+    // getRoles: (state) => {
+    //   return state.newLocation.roles;
+    // },
     getNewLocation: (state) => {
       return state.newLocation;
     },
@@ -125,7 +126,8 @@ export const useLocationStore = defineStore("LocationStore", {
       this.newLocation.roles.push(roleObject);
     },
     removeRole(reqIndex) {
-      this.roles = this.roles.filter((_, index) => index != reqIndex);
+      console.log(reqIndex);
+      this.newLocation.roles = this.newLocation.roles.filter((_, index) => index != reqIndex);
     },
     async fetchLocation(name, playerId) {
       this.isFetchingLocation = true;
@@ -137,7 +139,6 @@ export const useLocationStore = defineStore("LocationStore", {
       }
       let result = await axiosClient("get", "/location", params, null, null);
       if (result.meta.code != 1000) {
-        // alert(result.meta.error);
         console.log(result.meta.message);
         return false;
       }
@@ -146,15 +147,9 @@ export const useLocationStore = defineStore("LocationStore", {
         return true;
       } else {
         let locationResponse = buildApiResponseToLocationModel(result);
-        console.log(result);
         if (locationResponse) {
-          // let locationResponse = buildApiResponseToLocationModel(result);
           this.newLocation = buildApiResponseToLocationModel(result);
           return true;
-          // if (!locationResponse.updateDate) {
-          //   this.newLocation = buildApiResponseToLocationModel(result);
-          //   return true;
-          // }
         }
       }
       this.isFetchingLocation = false;
@@ -171,9 +166,9 @@ export const useLocationStore = defineStore("LocationStore", {
         console.log(result.meta.message);
         return result.meta;
       }
-      this.newLocation = buildLocationModelToApiRequest(result);
+      this.newLocation = buildLocationApiSingleToModel(result);
       this.createLocationStatus = true;
-      return result.meta;
+      return result.meta; 
     },
     async rollbackLocation() {
       console.log(this.newLocation);
@@ -209,8 +204,7 @@ export const useLocationStore = defineStore("LocationStore", {
         console.log(result.meta.message);
         return result.meta;
       }
-      let newLocationResponse = buildApiResponseToLocationModel(result);
-      this.locationList.push(newLocationResponse);
+      await this.fetchLocation()
       this.newLocation = null;
       return null;
     },

@@ -45,7 +45,6 @@ export default {
   },
   methods: {
     async submit() {
-      console.log("submit");
       let err = await this.savePlayerInfo(this.name)
       if(!err) {
         this.$router.back()

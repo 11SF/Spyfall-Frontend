@@ -39,11 +39,12 @@ export const buildApiResponseToLocationModel = (response) => {
   }
 };
 
-export const buildLocationModelToApiRequest = (response) => {
+
+export const buildLocationApiSingleToModel = (response) => {
   // console.log(response);
-  let { id, name, roles, createBy, createByPlayerId } = response.data;
+  let { _id, name, roles, createBy, createByPlayerId } = response.data;
   return {
-    id: id,
+    id: _id,
     name: name,
     roles: mapRoles(roles),
     createBy: createBy,

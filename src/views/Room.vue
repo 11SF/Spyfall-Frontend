@@ -44,14 +44,14 @@
             <button
               :class="getClassModeSelectBtn().left"
               class="px-4 py-2 shadow-inner"
-              @click="modeSelected = 0"
+              @click="handleModeSelected(0)"
             >
               โหมดปกติ
             </button>
             <button
               :class="getClassModeSelectBtn().right"
               class="px-4 py-2 shadow-inner"
-              @click="modeSelected = 1"
+              @click="handleModeSelected(1)"
             >
               โหมดคนหลงทาง
             </button>
@@ -62,7 +62,7 @@
               class="w-fit h-fit mx-auto xl:mx-0 bg-white flex rounded-3xl shadow-inner overflow-hidden mb-2"
             >
               <p class="px-4 py-2 font-bold">เวลา</p>
-              <select class="text-center" v-model="roundTime">
+              <select class="text-center" v-model="roomStore.roundTime">
                 <option v-for="index in [8, 7, 6, 5, 4, 3, 2, 1]">
                   {{ index }}.00
                 </option>
@@ -73,7 +73,7 @@
               class="w-full h-fit row-span-1 mx-auto bg-white rounded-3xl shadow-inner overflow-hidden flex justify-between"
             >
               <p class="px-4 py-2 font-bold">Spy</p>
-              <select class="text-center" v-model="spyTotal">
+              <select class="text-center" v-model="roomStore.numOfSpy">
                 <option v-for="index in [8, 7, 6, 5, 4, 3, 2, 1]">
                   {{ index }}
                 </option>
@@ -103,10 +103,13 @@
           </p>
         </div>
         <!-- Started Game -->
-        <div class="mx-auto items-center row-span-4 h-full flex-block grid grid-rows-6" v-else>
+        <div
+          class="mx-auto items-center row-span-4 h-full flex-block grid grid-rows-6"
+          v-else
+        >
           <p class="text-9xl text-center row-span-3">😀</p>
           <p class="text-3xl font-bold text-center row-span-1">สถานีตำรวจ</p>
-          <p class="text-xl font-bold text-center  row-span-1">( ตำรวจ )</p>
+          <p class="text-xl font-bold text-center row-span-1">( ตำรวจ )</p>
         </div>
 
         <!-- btn area -->
@@ -115,7 +118,7 @@
           <button
             class="text-white px-20 py-4 rounded-3xl mt-10 bg-gradient-to-tr from-[#1e0253] to-[#c637a0] shadow-inner ease-in-out duration-300 delay-75 animate-bounce hover:animate-none"
             v-if="true"
-            >
+          >
             เริ่มเกม
           </button>
         </div>
@@ -176,15 +179,31 @@ import LocationList from "../components/LocationList.vue";
 import { useLocationStore } from "../stores/locationStore";
 import { storeToRefs } from "pinia";
 import LocationPanel from "../components/LocationPanel.vue";
+import { useRoomStore } from "../stores/roomStore";
+import { usePlayerStore } from "../stores/playerStore";
+import SocketService from "../services/socket.service";
+
 export default {
   setup() {
     const locationStore = useLocationStore();
     const { getLocationList } = storeToRefs(locationStore);
+    const playerStore = usePlayerStore();
+    const { getPlayerInfo } = storeToRefs(playerStore);
+    const roomStore = useRoomStore();
+    const { getNumOfSpy, getMode, getRoundTime } = storeToRefs(roomStore);
     return {
       locationStore,
       getLocationList,
+      roomStore,
+      playerStore,
+      getPlayerInfo,
+      getNumOfSpy,
+      getMode,
+      getRoundTime,
+      SocketService,
     };
   },
+  props: ["type"],
   data() {
     return {
       playerList: [
@@ -351,6 +370,29 @@ export default {
     handleLeaveRoomBtn() {
       this.$router.push("/");
     },
+    handleModeSelected(mode) {
+      this.modeSelected = mode;
+      this.roomStore.setMode(mode);
+    },
+  },
+  async created() {
+    if (!this.getPlayerInfo.name) {
+      let isFoundUser = await this.playerStore.fetchPlayerInfo();
+      if (!isFoundUser) {
+        return this.$router.push("/create-name");
+      }
+    }
+    await this.locationStore.fetchLocation();
+    this.roomStore.setLocation(this.locationStore.getLocationList);
+    this.SocketService.setupSocketConnection();
+    if (this.type === "owner") {
+      SocketService.createRoom(
+        this.getPlayerInfo.name,
+        this.getPlayerInfo.id,
+        this.getRoundTime,
+        this.getMode
+      );
+    }
   },
 };
 </script>

@@ -3,11 +3,11 @@
     <div class="divide-y">
       <div class="flex justify-between text-sm font-bold mb-3">
         <div>รายการ</div>
-        <div>จำนวน {{ getRoles.length }}</div>
+        <div>จำนวน {{ getNewLocation.roles.length }}</div>
       </div>
       <div
         v-if="!getFetchingLocationStatus"
-        v-for="(i, index) in getRoles"
+        v-for="(i, index) in getNewLocation.roles"
         :key="index"
       >
         <div class="p-4 flex justify-between">
@@ -35,11 +35,11 @@ import { storeToRefs } from "pinia";
 export default {
   setup() {
     const locationStore = useLocationStore();
-    const { getRoles } = storeToRefs(locationStore);
+    const { getNewLocation } = storeToRefs(locationStore);
     const { removeRole, fetchLocation } = useLocationStore();
     return {
       locationStore,
-      getRoles,
+      getNewLocation,
       removeRole,
     };
   },

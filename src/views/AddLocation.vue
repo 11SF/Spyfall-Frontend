@@ -50,8 +50,6 @@ export default {
     const { getPlayerInfo } = storeToRefs(playerStore);
     const { fetchPlayerInfo } = usePlayerStore();
 
-    fetchLocation();
-
     return {
       locationStore,
       getCreateLocationStatus,
@@ -66,20 +64,14 @@ export default {
   },
   methods: {
     async backtoHomePage() {
-      if (
-        this.getNewLocation &&
-        confirm("ต้องการออกจากหน้านี้ใช่มั้ยย ข้อมูลทั้งหมดจะไม่ถูกเซฟนะ")
-      ) {
-        this.rollBackData();
-        if (window.history.length > 1) {
-          this.$router.back();
+      if (this.getNewLocation) {
+        if (
+          confirm("ต้องการออกจากหน้านี้ใช่มั้ยย ข้อมูลทั้งหมดจะไม่ถูกเซฟนะ")
+        ) {
+          await this.rollBackData();
+          this.$router.push("/");
         }
-        this.$router.push("/");
-      }
-      if (!this.getNewLocation) {
-        if (window.history.length > 1) {
-          this.$router.back();
-        }
+      } else {
         this.$router.push("/");
       }
     },
@@ -95,18 +87,16 @@ export default {
       let err = await this.saveRoles();
     },
   },
-  async beforeCreate() {
-    let isFoundUser = await this.fetchPlayerInfo();
-    if (!isFoundUser) {
-      return this.$router.push("/create-name");
+  async created() {
+    if (!this.getPlayerInfo.name) {
+      let isFoundUser = await this.fetchPlayerInfo();
+      if (!isFoundUser) {
+        return this.$router.push("/create-name");
+      }
     }
-    let haveDraftLocation = await this.fetchLocation(
-      null,
-      this.getPlayerInfo.id
-    );
-  },
-  created() {
-    document.addEventListener("beforeunload", this.rollBackData());
+    await this.fetchLocation();
+    await this.fetchLocation(null, this.getPlayerInfo.id);
+    // document.addEventListener("beforeunload", this.rollBackData());
     // let result = await this.fetchPlayerInfo();
     // console.log(result);
     // if (!result) {

@@ -19,9 +19,11 @@
           <input
             class="col-span-3 sm:col-span-4 px-8 font-light rounded-3xl focus:outline-none"
             placeholder="token 5 หลัก"
+            v-model="code"
           />
           <button
             class="px-8 h-full col-span-3 sm:col-span-2 text-md rounded-3xl hover:bg-[#FEC260] shadow-inner bg-gradient-to-tr from-[#ff9253df] to-[#ffd143] hover:bg-gradient-to-bl hover:from-[#5961df] hover:to-[#f574b9] transition duration-300 ease-in-out hover:scale-x-110 hover:text-white"
+            @click="joinRoom"
           >
             เข้าร่วม
           </button>
@@ -45,10 +47,7 @@
               />
             </svg>
 
-            <p
-              class="underline underline-offset-4 inline"
-              @click="$router.push('/room')"
-            >
+            <p class="underline underline-offset-4 inline" @click="createRoom">
               สร้างห้อง
             </p>
           </div>
@@ -86,6 +85,70 @@
       </path>
     </svg> -->
   </div>
+  <TransitionRoot class="absolute z-50" appear :show="showModal" as="template">
+    <Dialog as="div" @close="closeModal" class="">
+      <TransitionChild
+        as="template"
+        enter="duration-300 ease-out"
+        enter-from="opacity-0"
+        enter-to="opacity-100"
+        leave="duration-200 ease-in"
+        leave-from="opacity-100"
+        leave-to="opacity-0"
+      >
+        <div class="fixed inset-0 bg-black bg-opacity-25" />
+      </TransitionChild>
+
+      <div class="fixed inset-0 overflow-y-auto">
+        <div
+          class="flex min-h-full items-center justify-center p-4 text-center"
+        >
+          <TransitionChild
+            as="template"
+            enter="duration-300 ease-out"
+            enter-from="opacity-0 scale-95"
+            enter-to="opacity-100 scale-100"
+            leave="duration-200 ease-in"
+            leave-from="opacity-100 scale-100"
+            leave-to="opacity-0 scale-95"
+          >
+            <DialogPanel
+              class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all"
+            >
+              <DialogTitle
+                as="h3"
+                class="text-lg font-medium leading-6 text-gray-900"
+              >
+                คุณกำลังอยู่ในห้องของ {{ roomStore.getName }}
+              </DialogTitle>
+              <div class="mt-2">
+                <p class="text-sm text-gray-500">
+                  ต้องการเล่นต่อที่ห้องของ {{ roomStore.getName }} หรือไม่ 🤔
+                </p>
+              </div>
+
+              <div class="mt-4">
+                <button
+                  type="button"
+                  class="inline-flex justify-center rounded-md border border-transparent bg-blue-100 mr-5 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                  @click="handleRoomContinue(true)"
+                >
+                  เล่นต่อ
+                </button>
+                <button
+                  type="button"
+                  class="inline-flex justify-center rounded-md border border-transparent bg-gray-100 px-4 py-2 text-sm font-medium text-black hover:bg-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2"
+                  @click="handleRoomContinue(false)"
+                >
+                  ออกจากห้อง
+                </button>
+              </div>
+            </DialogPanel>
+          </TransitionChild>
+        </div>
+      </div>
+    </Dialog>
+  </TransitionRoot>
 </template>
 <script>
 import axios from "axios";
@@ -93,18 +156,30 @@ import { storeToRefs } from "pinia";
 import { getVersion } from "../appVersion";
 import { useLocationStore } from "../stores/locationStore";
 import { usePlayerStore } from "../stores/playerStore";
+import { useRoomStore } from "../stores/roomStore";
 import { axiosClient } from "../utility/axios";
+import CommonModal from "../components/ShareComponents/CommonModal.vue";
+import {
+  TransitionRoot,
+  TransitionChild,
+  Dialog,
+  DialogPanel,
+  DialogTitle,
+  DialogDescription,
+} from "@headlessui/vue";
+import { buildRoomObjectModel } from "../adapter/room.adapter";
 
 export default {
   setup() {
     const locationStore = useLocationStore();
+    const roomStore = useRoomStore();
     const playerStore = usePlayerStore();
     const { getPlayerInfo } = storeToRefs(playerStore);
-
     return {
       locationStore,
       playerStore,
-      getPlayerInfo
+      getPlayerInfo,
+      roomStore,
     };
   },
   data() {
@@ -113,6 +188,9 @@ export default {
       appVersion: getVersion(),
       bgPicture: null,
       showTokenForm: false,
+      isOpen: true,
+      code: null,
+      showModal: false,
     };
   },
   methods: {
@@ -136,17 +214,60 @@ export default {
         return null;
       }
     },
+    setIsOpen(value) {
+      console.log(value);
+      this.isOpen = value;
+    },
+    createRoom() {
+      this.roomStore.setOwner(true);
+      this.$router.push("/room");
+    },
+    joinRoom() {
+      if (this.code) {
+        this.roomStore.setOwner(false);
+        // this.roomStore.setCode(this.code)
+        this.roomStore.fetchRoom(this.code);
+        if (this.roomStore.getCode) {
+          this.$router.push("/room");
+        }
+      }
+    },
+    async handleRoomContinue(isContinue) {
+      if (isContinue) {
+        this.$router.push("/room");
+      } else {
+        if (this.roomStore.getIsOwner) {
+          await this.roomStore.closeRoom();
+        } else {
+          await this.roomStore.leaveRoom();
+        }
+      }
+      this.showModal = false;
+    },
   },
   async created() {
-    if (!this.getPlayerInfo.name) {
-      let isFoundUser = await this.playerStore.fetchPlayerInfo();
-      if (!isFoundUser) {
-        return this.$router.push("/create-name");
-      }
-    }
     await this.fetchApiVersion();
+    if (!this.getPlayerInfo.name) {
+      await this.playerStore.fetchPlayerInfo();
+      this.showModal = await this.roomStore.fetchUserRoom(
+        this.playerStore.getPlayerInfo.id
+      );
+    } else {
+      this.showModal = await this.roomStore.fetchUserRoom(
+        this.playerStore.getPlayerInfo.id
+      );
+    }
     // await this.fetchCuteCat();
+  },
+  components: {
+    CommonModal,
+    TransitionRoot,
+    TransitionChild,
+    Dialog,
+    DialogPanel,
+    DialogTitle,
+    DialogDescription,
   },
 };
 </script>
-<style></style>
+<style lang="css"></style>

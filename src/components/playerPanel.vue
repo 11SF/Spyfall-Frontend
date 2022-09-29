@@ -10,6 +10,7 @@
         {{ item.name }}
       </p>
       <button
+      v-if="edit"
         class="absolute -top-1 -right-1 text-black hover:text-white bg-white rounded-full hover:bg-gradient-to-tr from-[#c637a0] to-[#1e0253] hover:scale-125 duration-100 ease-in-out"
       >
         <svg

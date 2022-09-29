@@ -3,6 +3,7 @@ import Home from "../views/Home.vue";
 import AddLocation from "../views/AddLocation.vue";
 import CreateName from "../views/CreateName.vue";
 import Room from "../views/Room.vue"
+import Test from "../views/Test.vue"
 // import About from "@/views/About.vue";
 
 const routes = [
@@ -25,6 +26,11 @@ const routes = [
     path: "/room",
     name: "Room",
     component: Room,
+  },
+  {
+    path: "/test",
+    name: "Test",
+    component: Test,
   },
   // {
   //   path: "/create-name",

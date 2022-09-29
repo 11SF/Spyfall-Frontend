@@ -3,7 +3,7 @@
     <div
       class="mx-auto w-fit h-fit text-4xl flex justify-between rounded-3xl bg-white overflow-hidden"
     >
-      <p class="py-6 px-5 bg-[#FF8700] rounded-3xl">#TEDEV</p>
+      <p class="py-6 px-5 bg-[#FF8700] rounded-3xl">{{ roomStore.getCode }}</p>
       <button
         class="text-black px-5 xl:px-0 xl:text-white xl:pt-5 xl:hover:px-5 xl:hover:pt-0 xl:hover:text-black duration-150 ease-in-out flex justify-center items-center"
         @click="handleLeaveRoomBtn"
@@ -38,7 +38,7 @@
       >
         <div
           class="row-span-1 flex flex-col justify-center xl:flex-row xl:justify-between text-xs sm:text-lg"
-          v-if="true"
+          v-if="roomStore.getIsOwner"
         >
           <div class="mx-auto xl:mx-0 mb-3">
             <button
@@ -63,8 +63,8 @@
             >
               <p class="px-4 py-2 font-bold">เวลา</p>
               <select class="text-center" v-model="roomStore.roundTime">
-                <option v-for="index in [8, 7, 6, 5, 4, 3, 2, 1]">
-                  {{ index }}.00
+                <option v-for="item in timeData">
+                  {{ item }}
                 </option>
               </select>
               <p class="px-4 py-2 font-bold">นาที</p>
@@ -74,8 +74,8 @@
             >
               <p class="px-4 py-2 font-bold">Spy</p>
               <select class="text-center" v-model="roomStore.numOfSpy">
-                <option v-for="index in [8, 7, 6, 5, 4, 3, 2, 1]">
-                  {{ index }}
+                <option v-for="item in getSpyPosible()">
+                  {{ item }}
                 </option>
               </select>
               <p class="px-4 py-2 font-bold">คน</p>
@@ -117,7 +117,7 @@
         <div class="row-span-1 mx-auto">
           <button
             class="text-white px-20 py-4 rounded-3xl mt-10 bg-gradient-to-tr from-[#1e0253] to-[#c637a0] shadow-inner ease-in-out duration-300 delay-75 animate-bounce hover:animate-none"
-            v-if="true"
+            v-if="roomStore.getIsOwner"
           >
             เริ่มเกม
           </button>
@@ -134,7 +134,11 @@
         <div
           class="w-full h-fit py-1 overflow-auto hover:overflow-y-scroll no-scrollbar col-span-6 sm:col-span-4 xl:col-span-6 row-span-3 sm:row-span-5 xl:row-span-3"
         >
-          <PlayerPanel class="max-h-72" :players="playerList" :edit="true" />
+          <PlayerPanel
+            class="max-h-72"
+            :players="getPlayerList"
+            :edit="roomStore.getIsOwner"
+          />
         </div>
 
         <div
@@ -166,7 +170,7 @@
         <div
           class="w-full py-1 row-span-5 max-h-96 overflow-auto hover:overflow-y-scroll no-scrollbar"
         >
-          <LocationPanel class="" :edit="true" />
+          <LocationPanel class="" :edit="roomStore.getIsOwner" />
         </div>
       </div>
     </div>
@@ -182,6 +186,7 @@ import LocationPanel from "../components/LocationPanel.vue";
 import { useRoomStore } from "../stores/roomStore";
 import { usePlayerStore } from "../stores/playerStore";
 import SocketService from "../services/socket.service";
+import { buildRoomObjectModel } from "../adapter/room.adapter";
 
 export default {
   setup() {
@@ -190,7 +195,17 @@ export default {
     const playerStore = usePlayerStore();
     const { getPlayerInfo } = storeToRefs(playerStore);
     const roomStore = useRoomStore();
-    const { getNumOfSpy, getMode, getRoundTime } = storeToRefs(roomStore);
+    const {
+      getNumOfSpy,
+      getMode,
+      getRoundTime,
+      getPlayerList,
+      getInfoForSocket,
+    } = storeToRefs(roomStore);
+    // let socketResponse = null
+
+    SocketService.setupSocketConnection();
+
     return {
       locationStore,
       getLocationList,
@@ -201,6 +216,9 @@ export default {
       getMode,
       getRoundTime,
       SocketService,
+      getPlayerList,
+      getInfoForSocket,
+      // socketResponse
     };
   },
   props: ["type"],
@@ -341,7 +359,9 @@ export default {
       ],
       modeSelected: 0,
       roundTime: "8.00",
+      timeData: ["8.00", "7.00", "6.00", "5.00", "4.00", "3.00", "2.00"],
       spyTotal: 1,
+      socketResponse: null,
     };
   },
   components: {
@@ -374,8 +394,26 @@ export default {
       this.modeSelected = mode;
       this.roomStore.setMode(mode);
     },
+    exitRoom() {
+      if (this.roomStore.isOwner) {
+        if (alert("ต้องการปิดห้องใช่มั้ยยย")) {
+          this.roomStore.setOwner(false);
+        }
+      }
+    },
+    getSpyPosible() {
+      if (!this.roomStore.playerList) {
+        return;
+      }
+      let result = Math.ceil(this.roomStore.playerList.length / 3);
+      if (result < 1) {
+        result = 1;
+      }
+      return result;
+    },
   },
   async created() {
+    let vm = this;
     if (!this.getPlayerInfo.name) {
       let isFoundUser = await this.playerStore.fetchPlayerInfo();
       if (!isFoundUser) {
@@ -384,15 +422,80 @@ export default {
     }
     await this.locationStore.fetchLocation();
     this.roomStore.setLocation(this.locationStore.getLocationList);
-    this.SocketService.setupSocketConnection();
-    if (this.type === "owner") {
-      SocketService.createRoom(
+    // this.SocketService.setupSocketConnection();
+    if (this.roomStore.getOwner) {
+      await SocketService.createRoom(
         this.getPlayerInfo.name,
         this.getPlayerInfo.id,
         this.getRoundTime,
-        this.getMode
+        this.getMode,
+        this.getNumOfSpy
       );
+    } else {
+      if (!this.roomStore.getCode) {
+        let isFound = await this.roomStore.fetchUserRoom(
+          this.playerStore.getPlayerInfo.id
+        );
+        if (isFound) {
+          await SocketService.joinRoom(
+            this.getPlayerInfo.id,
+            this.roomStore.getCode
+          );
+        } else {
+          this.$router.push("/");
+        }
+      } else {
+        await SocketService.joinRoom(
+          this.getPlayerInfo.id,
+          this.roomStore.getCode
+        );
+      }
     }
+    // this.SocketService.socket.on("ROOM:SYS-MESSAGE", function (data) {
+    //   vm.socketResponse = data;
+    //   console.log("socket");
+    // });
+    // this.roomStore.fetchRoom(this.roomStore.getCode)
+  },
+  mounted() {
+    let vm = this;
+    this.SocketService.setupSocketConnection();
+    this.SocketService.socket.on("ROOM:SYS-MESSAGE", function (data) {
+      vm.socketResponse = data;
+    });
+    this.SocketService.socket.on("ROOM:SYNC-SETTING", function (data) {
+      vm.socketResponse = data;
+    });
+  },
+  watch: {
+    socketResponse(newSocketResponse) {
+      console.log(newSocketResponse);
+      let roomObject = null;
+      if (newSocketResponse?.meta.code === 1000) {
+        switch (newSocketResponse.commandEvent) {
+          case "OWNER:CREATE-ROOM":
+            roomObject = buildRoomObjectModel(newSocketResponse);
+            this.roomStore.setRoomDataFromSocket(roomObject);
+            break;
+          case "PLAYER:JOIN-ROOM":
+            console.log("PLAYER:JOIN-ROOM");
+            roomObject = buildRoomObjectModel(newSocketResponse.data[0]);
+            this.roomStore.setRoomDataFromSocket(roomObject);
+            break;
+          default:
+            break;
+        }
+      }
+    },
+    getInfoForSocket(oldInfoForSockett, newInfoForSockett) {
+      console.log(oldInfoForSockett);
+      if (oldInfoForSockett) {
+        console.log("asd");
+        // SocketService.updateSetting(this.getInfoForSocket);
+        console.log(this.getInfoForSocket);
+      }
+      // console.log(this.getLocationList);
+    },
   },
 };
 </script>
